@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.ws.rs.GET;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlRootElement;
@@ -77,4 +80,11 @@ public class Carrinho {
 		return produtos;
 	}
 
+	public String toXml() {
+		return new XStream().toXML(this);
+	}
+
+	public String toJson() {
+		return new Gson().toJson(this);
+	}
 }
