@@ -17,8 +17,12 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import static org.junit.Assert.assertEquals;
+
 public class ClienteTest {
 
+    public static final String URI_CARRINHOS = "/carrinhos";
+    public static final String TARGET = "http://localhost:8080";
     private HttpServer servidor;
 
     @Before
@@ -34,17 +38,17 @@ public class ClienteTest {
     @Test
     public void testaQueBuscarUmCarrinhoTrazOCarrinhoEsperado() {
         Client client = ClientBuilder.newClient();
-        final WebTarget target = client.target("http://localhost:8080");
-        String conteudo = target.path("/carrinhos").request().get(String.class);
+        final WebTarget target = client.target(TARGET);
+        String conteudo = target.path(URI_CARRINHOS + "/1").request().get(String.class);
         Carrinho carrinho = (Carrinho) new XStream().fromXML(conteudo);
 
-        Assert.assertEquals("Rua Vergueiro 3185, 8 andar", carrinho.getRua());
+        assertEquals("Rua Vergueiro 3185, 8 andar", carrinho.getRua());
     }
 
     @Test
     public void deveInserirCarrinho() {
         Client client = ClientBuilder.newClient();
-        WebTarget target = client.target("http://localhost:8080");
+        WebTarget target = client.target(TARGET);
 
         Carrinho carrinho = new Carrinho();
         carrinho.adiciona(new Produto(314L, "Tablet", 999, 1));
@@ -54,7 +58,10 @@ public class ClienteTest {
 
         Entity<String> entity = Entity.entity(xml, MediaType.APPLICATION_XML);
 
-        Response response = target.path("/carrinhos").request().post(entity);
-        Assert.assertEquals("<status>sucesso</status>", response.readEntity(String.class));
+        Response response = target.path(URI_CARRINHOS).request().post(entity);
+        assertEquals(201, response.getStatus());
+
+        final String conteudo = client.target(response.getHeaderString("Location")).request().get(String.class);
+        Assert.assertTrue(conteudo.contains("Tablet"));
     }
 }
