@@ -6,21 +6,35 @@ import com.thoughtworks.xstream.XStream;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.net.URI;
 
 @Path("projetos")
 public class ProjetoResource {
 
+    private ProjetoDAO projetoDAO = new ProjetoDAO();
+
     @Path("{id}")
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_XML)
     public String busca(@PathParam("id") long id) {
-        return new ProjetoDAO().busca(id).toJson();
+        return projetoDAO.busca(id).toXml();
     }
 
     @POST
-    public String adiciona(String conteudo) {
+    @Consumes(MediaType.APPLICATION_XML)
+    public Response adiciona(String conteudo) {
         Projeto projeto = (Projeto) new XStream().fromXML(conteudo);
-        new ProjetoDAO().adiciona(projeto);
-        return "<status>sucesso</status>";
+        projetoDAO.adiciona(projeto);
+
+        final URI location = URI.create("/projetos/" + projeto.getId());
+        return Response.created(location).build();
+    }
+
+    @Path("{id}/remove")
+    @DELETE
+    public Response remove(@PathParam("id") long id) {
+        projetoDAO.remove(id);
+        return Response.ok().build();
     }
 }

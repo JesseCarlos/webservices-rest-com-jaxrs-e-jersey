@@ -30,4 +30,11 @@ public class CarrinhoResource {
         final URI location = URI.create("/carrinhos/" + carrinho.getId());
         return Response.created(location).build();
     }
+
+    @Path("{id}/produtos/{produtoId}")
+    @DELETE
+    public Response remove(@PathParam("id") long id, @PathParam("produtoId") long produtoId) {
+        carrinhoDAO.busca(id).remove(produtoId);
+        return Response.ok().build();
+    }
 }
