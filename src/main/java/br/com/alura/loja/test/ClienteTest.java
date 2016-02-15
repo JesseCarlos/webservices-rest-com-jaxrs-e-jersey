@@ -3,7 +3,6 @@ package br.com.alura.loja.test;
 import br.com.alura.loja.Servidor;
 import br.com.alura.loja.modelo.Carrinho;
 import br.com.alura.loja.modelo.Produto;
-import com.thoughtworks.xstream.XStream;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.filter.LoggingFilter;
@@ -44,9 +43,7 @@ public class ClienteTest {
     @Test
     public void testaQueBuscarUmCarrinhoTrazOCarrinhoEsperado() {
         final WebTarget target = client.target(TARGET);
-        String conteudo = target.path(URI_CARRINHOS + "/1").request().get(String.class);
-        Carrinho carrinho = (Carrinho) new XStream().fromXML(conteudo);
-
+        Carrinho carrinho = target.path(URI_CARRINHOS + "/1").request().get(Carrinho.class);
         assertEquals("Rua Vergueiro 3185, 8 andar", carrinho.getRua());
     }
 
@@ -58,14 +55,13 @@ public class ClienteTest {
         carrinho.adiciona(new Produto(314L, "Tablet", 999, 1));
         carrinho.setRua("Rua Vergueiro");
         carrinho.setCidade("Sao Paulo");
-        String xml = carrinho.toXml();
 
-        Entity<String> entity = Entity.entity(xml, MediaType.APPLICATION_XML);
+        Entity<Carrinho> entity = Entity.entity(carrinho, MediaType.APPLICATION_XML);
 
         Response response = target.path(URI_CARRINHOS).request().post(entity);
         assertEquals(201, response.getStatus());
 
-        final String conteudo = client.target(response.getHeaderString("Location")).request().get(String.class);
-        Assert.assertTrue(conteudo.contains("Tablet"));
+        final Carrinho carrinhoCarregado = client.target(response.getHeaderString("Location")).request().get(Carrinho.class);
+        Assert.assertEquals("Tablet", carrinhoCarregado.getProdutos().get(0).getNome());
     }
 }
